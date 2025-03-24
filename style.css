@@ -37,3 +37,45 @@ p {
   color: #555;
   line-height: 1.5;
 }
+
+/* ****************Search bar and dropdown*********************** */
+
+#searchBar, #episodeSelector {
+  width: 100%;
+  max-width: 400px; 
+  padding: 10px 20px; 
+  margin: 20px auto; /* Center the search bar horizontally and add top margin */
+  border: 2px solid #ccc;
+  border-radius: 25px;
+  font-size: 16px; 
+  outline: none; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+  transition: all 0.3s ease; /* Smooth transition for focus effect */
+}
+
+/* Focus effect on the search bar */
+#searchBar:focus {
+  border-color: black; 
+  box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3); 
+}
+
+/* Styling the search bar placeholder */
+#searchBar::placeholder {
+  color: #aaa; 
+  font-style: italic; 
+}
+
+.searchWrapper {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 20px;
+  text-align: center; /* Center the search bar within its container */
+  margin-top: 30px; 
+}
+
+
+.hide{
+  display: none;
+}
+/* ************************************************************ */

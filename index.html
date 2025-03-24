@@ -9,6 +9,28 @@
   </head>
 
   <body>
+    <!-- Search bar and DropDown -->
+
+    <div class="searchWrapper">
+      <input 
+      type="text"
+      name="searchBar"
+      id="searchBar"
+      placeholder="Search"
+      />
+      <span id="resultCount"></span>
+      <!--  -->
+      <select id="episodeSelector">
+          <option value="">Select Episode</option>
+          <!-- Episode options will be populated here -->
+      </select>
+      
+      <!-- Display episode details here -->
+      <div id="episodeDetails"></div>
+    </div>
+
+    <!-- ---------------------------------------------- -->
+
     <div id="root">
     </div>
     <footer>The data for this project has (originally) come from <a href="https://tvmaze.com">[TVMaze.com]</a></footer>
