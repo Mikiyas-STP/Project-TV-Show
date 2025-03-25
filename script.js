@@ -4,19 +4,21 @@ let episodesData = [];
 const state = {
   films: []
 };
-
 function setup() {
-  //before the code started if we have somesort of delay lets show some message here
+  //at the start of the setup i defined loadmsg section to load message set its property to block if it exist
   const loadMsg = document.getElementById("loadingMessage");
   loadMsg.style.display = 'block';
   const fetchAllFilms = async () => {
+    //try fetching and if the response is not ok throw an error fetching episodes failed.
     try{
       const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
       if(!response.ok){
       throw new Error('Fetching episodes Failed');
     }
+    //if not return the normal condition here
     return await response.json();
   }
+  //if their is an error catched throw a new error an error occur when loading data
      catch (error){
     throw new Error('An error occur when loading data');
   }
