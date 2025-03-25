@@ -1,17 +1,30 @@
 
 
 // Declare episodesData globally
+// const endpoint = "https://programming.codeyourfuture.io/dummy-apis/films.json";
+let episodesData = [];
+const state = {
+  films: []
+};
 
 
 function setup() {
-  const allEpisodes = getAllEpisodes(); // Fetch all episodes
-  if (!Array.isArray(allEpisodes)) {
-    console.error("Error: allEpisodes is not an array", allEpisodes);
+  const fetchAllFilms = async () => {
+    const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
+    return await response.json();
+  };
+fetchAllFilms().then((allEpisodeList)=>{
+  state.films = allEpisodeList;
+  console.log(state.films);
+  //const allEpisodes = getAllEpisodes(); // Fetch all episodes
+  if (!Array.isArray(state.films)) {
+    console.error("Error: allEpisodes is not an array", state.films);
     return; // Exit if data is invalid
   }
-  episodesData = makePageForEpisodes(allEpisodes); // Store the data after rendering
+  episodesData = makePageForEpisodes(state.films); // Store the data after rendering
 
-  console.log(episodesData,"====>");
+});
+
 }
 
 
