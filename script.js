@@ -1,5 +1,3 @@
-
-
 // Declare episodesData globally
 // const endpoint = "https://programming.codeyourfuture.io/dummy-apis/films.json";
 let episodesData = [];
@@ -7,15 +5,27 @@ const state = {
   films: []
 };
 
-
 function setup() {
+  //before the code started if we have somesort of delay lets show some message here
+  const loadMsg = document.getElementById("loadingMessage");
+  loadMsg.style.display = 'block';
   const fetchAllFilms = async () => {
-    const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
+    try{
+      const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
+      if(!response.ok){
+      throw new Error('Fetching episodes Failed');
+    }
     return await response.json();
+  }
+     catch (error){
+    throw new Error('An error occur when loading data');
+  }
+
   };
 fetchAllFilms().then((allEpisodeList)=>{
   state.films = allEpisodeList;
   console.log(state.films);
+  loadMsg.style.display = 'none';
   //const allEpisodes = getAllEpisodes(); // Fetch all episodes
   if (!Array.isArray(state.films)) {
     console.error("Error: allEpisodes is not an array", state.films);
@@ -23,11 +33,16 @@ fetchAllFilms().then((allEpisodeList)=>{
   }
   episodesData = makePageForEpisodes(state.films); // Store the data after rendering
 
+}).catch((error) => {
+  //to handle error and notify user
+  loadMsg.style.display = 'none';
+  const errorMessage = document.getElementById("loadingMessage");
+  errorMessage.textContent = error.message;
+  errorMessage.style.display = 'block';
+
 });
 
 }
-
-
 
 function makePageForEpisodes(episodeList) {
   const episodesData = []; // Store all episodes' data here
@@ -73,7 +88,7 @@ function makePageForEpisodes(episodeList) {
 // ========================SearchBar and DropDown===========================//
 
 const searchBar = document.getElementById('searchBar');
-const resultCountElement = document.getElementById('resultCount');
+const resultCountElement = document.getElementById("resultCount");
 
 // Search bar event listener
 searchBar.addEventListener("input", (e) => {
