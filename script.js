@@ -1,20 +1,50 @@
-
-
 // Declare episodesData globally
-
-
+// const endpoint = "https://programming.codeyourfuture.io/dummy-apis/films.json";
+let episodesData = [];
+const state = {
+  films: []
+};
 function setup() {
-  const allEpisodes = getAllEpisodes(); // Fetch all episodes
-  if (!Array.isArray(allEpisodes)) {
-    console.error("Error: allEpisodes is not an array", allEpisodes);
+  //at the start of the setup i defined loadmsg section to load message set its property to block if it exist
+  const loadMsg = document.getElementById("loadingMessage");
+  loadMsg.style.display = 'block';
+  const fetchAllFilms = async () => {
+    //try fetching and if the response is not ok throw an error fetching episodes failed.
+    try{
+      const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
+      if(!response.ok){
+      throw new Error('Fetching episodes Failed');
+    }
+    //if not return the normal condition here
+    return await response.json();
+  }
+  //if their is an error catched throw a new error an error occur when loading data
+     catch (error){
+    throw new Error('An error occur when loading data');
+  }
+
+  };
+fetchAllFilms().then((allEpisodeList)=>{
+  state.films = allEpisodeList;
+  console.log(state.films);
+  loadMsg.style.display = 'none';
+  //const allEpisodes = getAllEpisodes(); // Fetch all episodes
+  if (!Array.isArray(state.films)) {
+    console.error("Error: allEpisodes is not an array", state.films);
     return; // Exit if data is invalid
   }
-  episodesData = makePageForEpisodes(allEpisodes); // Store the data after rendering
+  episodesData = makePageForEpisodes(state.films); // Store the data after rendering
 
-  console.log(episodesData,"====>");
+}).catch((error) => {
+  //to handle error and notify user
+  loadMsg.style.display = 'none';
+  const errorMessage = document.getElementById("loadingMessage");
+  errorMessage.textContent = error.message;
+  errorMessage.style.display = 'block';
+
+});
+
 }
-
-
 
 function makePageForEpisodes(episodeList) {
   const episodesData = []; // Store all episodes' data here
@@ -60,7 +90,7 @@ function makePageForEpisodes(episodeList) {
 // ========================SearchBar and DropDown===========================//
 
 const searchBar = document.getElementById('searchBar');
-const resultCountElement = document.getElementById('resultCount');
+const resultCountElement = document.getElementById("resultCount");
 
 // Search bar event listener
 searchBar.addEventListener("input", (e) => {
