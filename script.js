@@ -16,22 +16,18 @@ const episodeSelector = document.getElementById('episodeSelector');
 
 // Fetch all shows and populate the dropdown
 async function fetchShows() {
-    try {
-        if (cache.shows) {
-            populateShowSelector(cache.shows);
-            return;
-        }
-        const response = await fetch('https://api.tvmaze.com/shows');
-        const shows = await response.json();
-    
-        const sortedShows = shows.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-    
-        cache.shows = sortedShows;
-    
-        populateShowSelector(sortedShows);
-    } catch (error) {
-        displayErrorMessage()
+    if (cache.shows) {
+        populateShowSelector(cache.shows);
+        return;
     }
+    const response = await fetch('https://api.tvmaze.com/shows');
+    const shows = await response.json();
+
+    const sortedShows = shows.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+    cache.shows = sortedShows;
+
+    populateShowSelector(sortedShows);
 }
 
 // Populate the show selector dropdown
@@ -72,7 +68,6 @@ async function fetchEpisodes(showId) {
         displayAllEpisodes(episodes, showId); // Display all episodes on first fetch
     } catch (error) {
         console.error("Error fetching episodes:", error);
-        displayErrorMessage()
     }
 }
 
@@ -197,13 +192,6 @@ function searchRes(event) {
 }
 
 searchBox.addEventListener("input", searchRes);
-
-
-function displayErrorMessage(message) {
-    const errorMessageDiv = document.getElementById('error-message');
-    errorMessageDiv.textContent = message;
-    errorMessageDiv.style.display = 'block'; // Show the error message
-}
 
 // Fetch the shows when the page loads
 fetchShows();
