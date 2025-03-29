@@ -1,161 +1,197 @@
-// Declare episodesData globally
-// const endpoint = "https://programming.codeyourfuture.io/dummy-apis/films.json";
-let episodesData = [];
-const state = {
-  films: []
+
+
+const filmCardContainer = document.getElementById("filmCard-container");
+const searchBox = document.getElementById("search-input");
+const dropDownSelector = document.getElementById("movie");
+let counter = document.getElementById('counter');
+
+const cache = {
+    shows: null,
+    episodes: {},
+    searchTerm: ""
 };
-function setup() {
-  //at the start of the setup i defined loadmsg section to load message set its property to block if it exist
-  const loadMsg = document.getElementById("loadingMessage");
-  loadMsg.style.display = 'block';
-  const fetchAllFilms = async () => {
-    //try fetching and if the response is not ok throw an error fetching episodes failed.
-    try{
-      const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
-      if(!response.ok){
-      throw new Error('Fetching episodes Failed');
-    }
-    //if not return the normal condition here
-    return await response.json();
-  }
-  //if their is an error catched throw a new error an error occur when loading data
-     catch (error){
-    throw new Error('An error occur when loading data');
-  }
 
-  };
-fetchAllFilms().then((allEpisodeList)=>{
-  state.films = allEpisodeList;
-  console.log(state.films);
-  loadMsg.style.display = 'none';
-  //const allEpisodes = getAllEpisodes(); // Fetch all episodes
-  if (!Array.isArray(state.films)) {
-    console.error("Error: allEpisodes is not an array", state.films);
-    return; // Exit if data is invalid
-  }
-  episodesData = makePageForEpisodes(state.films); // Store the data after rendering
-
-}).catch((error) => {
-  //to handle error and notify user
-  loadMsg.style.display = 'none';
-  const errorMessage = document.getElementById("loadingMessage");
-  errorMessage.textContent = error.message;
-  errorMessage.style.display = 'block';
-
-});
-
-}
-
-function makePageForEpisodes(episodeList) {
-  const episodesData = []; // Store all episodes' data here
-  for (let episode of episodeList) {
-    let seasonNum = String(episode.season).padStart(2, "0");
-    let episodeNum = String(episode.number).padStart(2, "0");
-    
-    // Create the card section
-    const card = document.createElement("section");
-    const movieTitle = document.createElement("h1");
-    const movieImage = document.createElement("img");
-    const movieSummary = document.createElement("p");
-    
-    // Append elements to the card
-    movieTitle.textContent = `${episode.name} - S${seasonNum}E${episodeNum}`;
-    card.append(movieTitle);
-    
-    movieImage.src = episode.image.medium;
-    movieImage.alt = "logo of movie";
-    card.append(movieImage);
-    
-    movieSummary.innerHTML = episode.summary; // innerHTML is used to handle HTML tags in the summary
-    card.append(movieSummary);
-
-    // Append the card to the root element
-    document.getElementById("root").append(card);
-
-    // Store the episode data
-    episodesData.push({ title: episode.name, summary: episode.summary, element: card });
-  }
-  
-// create option element for the dropDown.
-
-  episodesData.forEach(episode => {
-    const option = document.createElement('option');
-    option.value = episode.title;
-    option.textContent = episode.title;
-    episodeSelector.appendChild(option);
-});
-  return episodesData;  // Return an array of episode data
-}
-
-// ========================SearchBar and DropDown===========================//
-
-const searchBar = document.getElementById('searchBar');
-const resultCountElement = document.getElementById("resultCount");
-
-// Search bar event listener
-searchBar.addEventListener("input", (e) => {
-  const value = e.target.value.toLowerCase();
-
-  let visibleCount = 0;
-
-  // Iterate over episodesData
-  episodesData.forEach(epi => {
-    // Check if the title or summary contains the search value
-    const isVisible = epi.title.toLowerCase().includes(value) || 
-                      epi.summary.toLowerCase().includes(value);
-
-    // Toggle visibility of the episode card
-    epi.element.classList.toggle("hide", !isVisible);
-
-    if (isVisible) {
-      visibleCount++;
-    }
-  });
-
-  // Update result count text
-  resultCountElement.textContent = `showing ${visibleCount}/${episodesData.length}`;
-});
-
-
-
-// Drop down
-
+const showSelector = document.getElementById('showSelector');
 const episodeSelector = document.getElementById('episodeSelector');
-const episodeDetailsElement = document.getElementById('episodeDetails');
 
+// Fetch all shows and populate the dropdown
+async function fetchShows() {
+    if (cache.shows) {
+        populateShowSelector(cache.shows);
+        return;
+    }
+    const response = await fetch('https://api.tvmaze.com/shows');
+    const shows = await response.json();
 
+    const sortedShows = shows.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
-// Listen for change event on the episodeSelector
-episodeSelector.addEventListener("change", (e) => {
-  const selectedTitle = e.target.value;  // Get the selected episode's title
+    cache.shows = sortedShows;
 
+    populateShowSelector(sortedShows);
+}
 
-  // filter the episodes based on the selected value
-  episodesData.forEach(epi => {
-      const isVisible = epi.title.toLowerCase().includes(selectedTitle.toLowerCase()) ||
-                        epi.summary.toLowerCase().includes(selectedTitle.toLowerCase());
+// Populate the show selector dropdown
+function populateShowSelector(shows) {
+    showSelector.innerHTML = '<option value="">Select a Show</option>';
+    shows.forEach(show => {
+        const option = document.createElement('option');
+        option.value = show.id;
+        option.textContent = show.name;
+        showSelector.appendChild(option);
+    });
+}
 
-      // Toggle visibility based on matching search
-      if (!selectedTitle) {
-          resetToOriginalState()
-          return
-      }
-      else{
-        epi.element.classList.toggle("hide", !isVisible);
-        episodeDetailsElement.innerHTML = '';
-      }
-  });
+// Fetch episodes for the selected show
+async function fetchEpisodes(showId) {
+    if (cache.episodes[showId] && Array.isArray(cache.episodes[showId])) {
+        populateEpisodeSelector(cache.episodes[showId]);
+        displayAllEpisodes(cache.episodes[showId], showId); // Show all episodes when available in cache
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://api.tvmaze.com/shows/${showId}/episodes`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch episodes for show ID ${showId}, status: ${response.status}`);
+        }
+
+        const episodes = await response.json();
+
+        if (!Array.isArray(episodes)) {
+            console.error('Fetched episodes are not an array.');
+            cache.episodes[showId] = [];
+        } else {
+            cache.episodes[showId] = episodes;
+        }
+
+        populateEpisodeSelector(episodes);
+        displayAllEpisodes(episodes, showId); // Display all episodes on first fetch
+    } catch (error) {
+        console.error("Error fetching episodes:", error);
+    }
+}
+
+// Populate the episode selector dropdown
+function populateEpisodeSelector(episodes) {
+    episodeSelector.innerHTML = '<option value="">Select an Episode</option>';
+    episodes.forEach(episode => {
+        const option = document.createElement('option');
+        option.value = episode.id;
+        option.textContent = `${episode.name} (S${episode.season}E${episode.number})`;
+        episodeSelector.appendChild(option);
+    });
+}
+
+// Display all episodes when a show is selected
+function displayAllEpisodes(episodes, showId) {
+    filmCardContainer.innerHTML = '';
+    counter.textContent = `Results: ${episodes.length} episodes found`;
+
+    episodes.forEach((episode) => {
+        const filmCard = document.createElement('div');
+        filmCard.classList.add('film-card');
+        filmCard.dataset.episodeId = episode.id;
+
+        const bannerImg = document.createElement('img');
+        bannerImg.src = episode.image ? episode.image.medium : 'default-image.jpg';
+        bannerImg.alt = `Banner image for ${episode.name}`;
+        filmCard.appendChild(bannerImg);
+
+        const titleElement = document.createElement('h3');
+        titleElement.textContent = `${episode.name} (S${episode.season}E${episode.number})`;
+        filmCard.appendChild(titleElement);
+
+        const summaryElement = document.createElement('p');
+        summaryElement.textContent = episode.summary ? episode.summary.replace(/<[^>]*>/g, '') : 'No summary available for this episode.';
+        filmCard.appendChild(summaryElement);
+
+        const linkElement = document.createElement('a');
+        linkElement.href = episode.url;
+        linkElement.target = "_blank";
+        linkElement.textContent = "View on TVMaze";
+        linkElement.classList.add('redirect');
+        filmCard.appendChild(linkElement);
+
+        filmCardContainer.appendChild(filmCard);
+    });
+}
+
+// Event listener for show selection
+showSelector.addEventListener('change', (event) => {
+    const selectedShowId = event.target.value;
+    if (selectedShowId) {
+        fetchEpisodes(selectedShowId);
+    } else {
+        episodeSelector.innerHTML = '<option value="">Select an Episode</option>';
+        filmCardContainer.innerHTML = '';
+    }
 });
 
+// Add an event listener for episode selection
+episodeSelector.addEventListener('change', (event) => {
+    const selectedEpisodeId = event.target.value;
+    if (selectedEpisodeId) {
+        displayEpisodeDetails(selectedEpisodeId);
+    } else {
+        const selectedShowId = showSelector.value;
+        if (selectedShowId) {
+            displayAllEpisodes(cache.episodes[selectedShowId], selectedShowId);
+        }
+    }
+});
 
+// Display details of a specific episode when selected
+function displayEpisodeDetails(episodeId) {
+    const selectedEpisode = cache.episodes[showSelector.value].find(episode => episode.id === parseInt(episodeId));
+    if (selectedEpisode) {
 
-function resetToOriginalState() {
-  // Show all episodes by removing the 'hide' class
-  episodesData.forEach(epi => {
-      epi.element.classList.remove("hide");
-  });
+        filmCardContainer.innerHTML = '';
+
+        const filmCard = document.createElement('div');
+        filmCard.classList.add('film-card');
+
+        const bannerImg = document.createElement('img');
+        bannerImg.src = selectedEpisode.image ? selectedEpisode.image.medium : 'default-image.jpg';
+        bannerImg.alt = `Banner image for ${selectedEpisode.name}`;
+        filmCard.appendChild(bannerImg);
+
+        const titleElement = document.createElement('h3');
+        titleElement.textContent = `${selectedEpisode.name} (S${selectedEpisode.season}E${selectedEpisode.number})`;
+        filmCard.appendChild(titleElement);
+
+        const summaryElement = document.createElement('p');
+        summaryElement.textContent = selectedEpisode.summary ? selectedEpisode.summary.replace(/<[^>]*>/g, '') : 'No summary available for this episode.';
+        filmCard.appendChild(summaryElement);
+
+        const linkElement = document.createElement('a');
+        linkElement.href = selectedEpisode.url;
+        linkElement.target = "_blank";
+        linkElement.textContent = "View on TVMaze";
+        linkElement.classList.add('redirect');
+        filmCard.appendChild(linkElement);
+
+        filmCardContainer.appendChild(filmCard);
+    }
 }
-// =================================================================//
 
-window.onload = setup;
+// Function to filter episodes based on search term
+function filterEpisodes(episodes, searchTerm) {
+    return episodes.filter(episode => episode.name.toLowerCase().includes(searchTerm.toLowerCase()));
+}
 
+// Event listener for search input
+function searchRes(event) {
+    cache.searchTerm = event.target.value;
+    const selectedShowId = showSelector.value;
+
+    if (selectedShowId && cache.episodes[selectedShowId]) {
+        const filteredEpisodes = filterEpisodes(cache.episodes[selectedShowId], cache.searchTerm);
+        counter.textContent = `Results: ${filteredEpisodes.length} episodes found`;
+        displayAllEpisodes(filteredEpisodes, selectedShowId);
+    }
+}
+
+searchBox.addEventListener("input", searchRes);
+
+// Fetch the shows when the page loads
+fetchShows();
