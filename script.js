@@ -290,10 +290,17 @@ function filterEpisodes(episodes, searchTerm) {
 function searchRes(event) {
     const searchTerm = event.target.value.toLowerCase();
     cache.searchTerm = searchTerm;
-     if(!showSelector.value){
-        const filteredShows = cache.shows.filter((show) =>
-          show.name.toLowerCase().includes(searchTerm)
-        );
+     if(!showSelector.value){ //if no show is selected, search among the shows
+        const filteredShows = cache.shows.filter((show) =>{
+            const nameMatch = show.name.toLowerCase().includes(searchTerm);
+            const genreMatch = show.genres.join(', ').toLowerCase().includes(searchTerm);
+            const summaryMatch = (show.summary || "")
+              .replace(/<[^>]*>/g, "")
+              .toLowerCase()
+              .includes(searchTerm);
+            return nameMatch || genreMatch || summaryMatch;
+
+        });
         counter.textContent = `Results: ${filteredShows.length} Shows found`;
         displayOnLoad(filteredShows);
         return;
@@ -301,7 +308,14 @@ function searchRes(event) {
      const theSelectedShow = showSelector.value;
      const episodes = cache.episodes[theSelectedShow];
      if(episodes && Array.isArray(episodes)){
-        const filteredEpisodes = filterEpisodes(episodes, searchTerm);
+        const filteredEpisodes = episodes.filter((episode)=>{
+            const nameMatch = episode.name.toLowerCase().includes(searchTerm);
+            const summaryMatch = (episode.summary || "")
+              .replace(/<[^>]*>/g, "")
+              .toLowerCase()
+              .includes(searchTerm);
+            return nameMatch || summaryMatch;
+        });
         counter.textContent=`Result: ${filteredEpisodes.length} episodes found`;
         displayAllEpisodes(filteredEpisodes);
 
