@@ -12,29 +12,62 @@ body {
 .filmCard-container{
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  width: 100%;
-  max-width: 1200px;
-  gap: 20px;
+  width: 90%;
+  padding: 1.5rem;
+  gap: 1rem;
 }
 
 .film-card {
   background-color: #fff;
   padding: 10px;
-  border-radius: 8px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+  margin:10px;
+  border-radius: 15px; 
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1); 
   overflow: hidden;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease ;
   text-align: center;
+}
+.film-card img{
+  width:100%;
+  height: auto;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  margin-bottom: 1rem;
 }
 
 .film-card:hover {
   transform: scale(1.05);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+.film-card p,
+.film-card h3{
+  margin: 0.5rem 0;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+.film-card h3,
+.film-card .clickable-title{
+  font-size: 1.2rem;
+  font-weight: bold;
+  color:#2c3e50;
 }
 
 .redirect{
+  margin-top: auto;
+  background-color: #c5dbf3;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  display: inline-block;
+  text-align: center;
+  transition: background-color 0.2s ease;
   list-style: none;
   text-decoration: none;
   color: peru;
+}
+.redirect:hover{
+  background-color: #0056bF;
 }
 /*Styling for the search button*/
 label {
@@ -110,13 +143,13 @@ select option {
 }
 
 .see-more-btn {
-  padding: 4px 8px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  background-color: #007bff;
-  color: white;
+  background: none;
   border: none;
-  border-radius: 4px;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  margin-top: 0.25rem;
 }
 .hidden{
   display: none;
