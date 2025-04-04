@@ -96,14 +96,19 @@ function displayOnLoad(shows){
         : "default-image.jpg";
       bannerImg.alt = `Banner image for ${Show.name}`;
       filmCard.appendChild(bannerImg);
-
-      const titleElement = document.createElement("h3");
-      titleElement.textContent = `${Show.name} (S${Show.season}E${Show.number})`;
+//clickable title to redirect it to the episodes and replace value of select a show and select an episode
+      const titleElement = document.createElement("p");
+      titleElement.textContent =`${Show.name}`;
+      titleElement.classList.add('clickable-title');
+      titleElement.style.cursor = "pointer";
+      titleElement.style.color = 'blue';
+      titleElement.addEventListener("click",()=>{
+        showSelector.value = Show.id;
+        fetchEpisodes(Show.id);
+        episodeSelector.innerHTML='<option value="">Select an Episode</option>';
+      });
       filmCard.appendChild(titleElement);
-
-
-
-
+//summary note
       const maxSummaryLength = 150;
       const summaryElement = document.createElement("p");
       const cleanSummary = (Show.summary || "No summary available.").replace(/<[^>]*>/g,"");
@@ -127,18 +132,11 @@ function displayOnLoad(shows){
         });
         summaryWrapper.appendChild(seeMoreBtn);
 
-       
+
       }
        filmCard.appendChild(summaryWrapper);
       
-
-
-      //const summaryElement = document.createElement("p");
-      //summaryElement.textContent = Show.summary
-       // ? Show.summary.replace(/<[^>]*>/g, "")
-       // : "No summary available for this episode.";
-      //filmCard.appendChild(summaryElement);
-      const generesElement = document.createElement("p");
+       const generesElement = document.createElement("p");
       generesElement.textContent = `Genre: ${Show.genres}`;
       filmCard.appendChild(generesElement);
       const statusElement = document.createElement("p");
