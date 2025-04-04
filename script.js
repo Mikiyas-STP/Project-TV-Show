@@ -1,5 +1,4 @@
-
-
+//my Global Variables
 const filmCardContainer = document.getElementById("filmCard-container");
 const searchBox = document.getElementById("search-input");
 const dropDownSelector = document.getElementById("movie");
@@ -13,6 +12,7 @@ const cache = {
     episodes: {},
     searchTerm: ""
 };
+
 // Fetch all shows and populate the dropdown
 async function fetchShows() {
     if (cache.shows) {
@@ -82,6 +82,7 @@ function populateEpisodeSelector(episodes) {
         episodeSelector.appendChild(option);
     });
 }
+
 //function for the displayed first data on load
 function displayOnLoad(shows){
     filmCardContainer.innerHTML = "";
@@ -98,7 +99,7 @@ function displayOnLoad(shows){
         : "default-image.jpg";
       bannerImg.alt = `Banner image for ${Show.name}`;
       filmCard.appendChild(bannerImg);
-//clickable title to redirect it to the episodes and replace value of select a show and select an episode
+//title set to clickable. it redirects to the episodes and replace value of select a show and select an episode.
       const titleElement = document.createElement("p");
       titleElement.textContent =`${Show.name}`;
       titleElement.classList.add('clickable-title');
@@ -108,15 +109,13 @@ function displayOnLoad(shows){
         showSelector.value = Show.id;
         fetchEpisodes(Show.id);
         episodeSelector.innerHTML='<option value="">Select an Episode</option>';
-        //showsView.classList.add('hidden'); //this hide the show list view
         backToShowsBtn.classList.remove('hidden');
       if (!backToShowsBtn.classList.contains("hidden")) {
         searchBox.placeholder = `Search in ${Show.name}`;
-      }
-      
-      });
+      }});
+
       filmCard.appendChild(titleElement);
-//summary note
+    //Fixing the lenthe of summary note and adding seemore see less functionality on the summary
       const maxSummaryLength = 150;
       const summaryElement = document.createElement("p");
       const cleanSummary = (Show.summary || "No summary available.").replace(/<[^>]*>/g,"");
@@ -139,24 +138,25 @@ function displayOnLoad(shows){
           seeMoreBtn.textContent = isShort ? "See Less" : "See More";
         });
         summaryWrapper.appendChild(seeMoreBtn);
-
-
+        
       }
        filmCard.appendChild(summaryWrapper);
       
       const generesElement = document.createElement("p");
       generesElement.textContent = `Genre: ${Show.genres}`;
       filmCard.appendChild(generesElement);
+
       const statusElement = document.createElement("p");
       statusElement.textContent = `Status: ${Show.status}`;
       filmCard.appendChild(statusElement);
+
       const ratingElement = document.createElement("p");
       ratingElement.textContent = `Rating: ${Show.rating.average}`;
       filmCard.appendChild(ratingElement);
+
       const runtimeElement = document.createElement("p");
       runtimeElement.textContent = `Run Time: ${Show.runtime}`;
       filmCard.appendChild(runtimeElement);
-
 
       const linkElement = document.createElement("a");
       linkElement.href = Show.url;
@@ -220,6 +220,7 @@ showSelector.addEventListener('change', (event) => {
     const selectedShowId = event.target.value;
     if (selectedShowId) {
         fetchEpisodes(selectedShowId);
+        backToShowsBtn.classList.remove("hidden");
     } else {
         episodeSelector.innerHTML = '<option value="">Select an Episode</option>';
         filmCardContainer.innerHTML = '';
@@ -231,6 +232,7 @@ episodeSelector.addEventListener('change', (event) => {
     const selectedEpisodeId = event.target.value;
     if (selectedEpisodeId) {
         displayEpisodeDetails(selectedEpisodeId);
+
     } else {
         const selectedShowId = showSelector.value;
         if (selectedShowId) {
