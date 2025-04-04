@@ -6,6 +6,8 @@ const dropDownSelector = document.getElementById("movie");
 let counter = document.getElementById('counter');
 const showSelector = document.getElementById('showSelector');
 const episodeSelector = document.getElementById('episodeSelector');
+const showsView = document.getElementById("showsView");
+const backToShowsBtn = document.getElementById("backToShowsBtn");
 const cache = {
     shows: null,
     episodes: {},
@@ -106,6 +108,12 @@ function displayOnLoad(shows){
         showSelector.value = Show.id;
         fetchEpisodes(Show.id);
         episodeSelector.innerHTML='<option value="">Select an Episode</option>';
+        //showsView.classList.add('hidden'); //this hide the show list view
+        backToShowsBtn.classList.remove('hidden');
+      if (!backToShowsBtn.classList.contains("hidden")) {
+        searchBox.placeholder = `Search in ${Show.name}`;
+      }
+      
       });
       filmCard.appendChild(titleElement);
 //summary note
@@ -136,7 +144,7 @@ function displayOnLoad(shows){
       }
        filmCard.appendChild(summaryWrapper);
       
-       const generesElement = document.createElement("p");
+      const generesElement = document.createElement("p");
       generesElement.textContent = `Genre: ${Show.genres}`;
       filmCard.appendChild(generesElement);
       const statusElement = document.createElement("p");
@@ -194,7 +202,19 @@ function displayAllEpisodes(episodes) {
         filmCardContainer.appendChild(filmCard);
     });
 }
-
+//backtoshow eventlistner
+backToShowsBtn.addEventListener('click', () =>{
+     showSelector.value = "";
+     episodeSelector.innerHTML = '<option value="">Select an Episode</option>';
+     searchBox.value = "";
+     cache.searchTerm = "";
+     showsView.classList.remove("hidden");
+     backToShowsBtn.classList.add("hidden");
+     displayOnLoad(cache.shows);
+    if (backToShowsBtn.classList.contains("hidden")) {
+        searchBox.placeholder = `Search the Movie`;
+    }
+});
 // Event listener for show selection
 showSelector.addEventListener('change', (event) => {
     const selectedShowId = event.target.value;
@@ -221,9 +241,17 @@ episodeSelector.addEventListener('change', (event) => {
 
 // Display details of a specific episode when selected
 function displayEpisodeDetails(episodeId) {
-    const selectedEpisode = cache.episodes[showSelector.value].find(episode => episode.id === parseInt(episodeId));
-    if (selectedEpisode) {
-
+    const showId = showSelector.value;
+    const episodes = cache.episodes[showId];
+    if (!episodes || !Array.isArray(episodes)) {
+        console.error("No episodes in cache for show ID:", showId);
+        return;
+    }
+    const selectedEpisode = episodes.find(episode => episode.id === parseInt(episodeId));
+    if(!selectedEpisode){
+        console.error("could not find episode with ID:", episodeId);
+        return;
+    }
         filmCardContainer.innerHTML = '';
 
         const filmCard = document.createElement('div');
@@ -251,7 +279,7 @@ function displayEpisodeDetails(episodeId) {
 
         filmCardContainer.appendChild(filmCard);
     }
-}
+
 
 // Function to filter episodes based on search term
 function filterEpisodes(episodes, searchTerm) {
@@ -278,6 +306,7 @@ function searchRes(event) {
         displayAllEpisodes(filteredEpisodes);
 
      }
+  
       
     }
 
