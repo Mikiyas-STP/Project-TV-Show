@@ -4,16 +4,13 @@ const filmCardContainer = document.getElementById("filmCard-container");
 const searchBox = document.getElementById("search-input");
 const dropDownSelector = document.getElementById("movie");
 let counter = document.getElementById('counter');
-
+const showSelector = document.getElementById('showSelector');
+const episodeSelector = document.getElementById('episodeSelector');
 const cache = {
     shows: null,
     episodes: {},
     searchTerm: ""
 };
-
-const showSelector = document.getElementById('showSelector');
-const episodeSelector = document.getElementById('episodeSelector');
-
 // Fetch all shows and populate the dropdown
 async function fetchShows() {
     if (cache.shows) {
@@ -27,6 +24,7 @@ async function fetchShows() {
 
     cache.shows = sortedShows;
 
+    displayOnLoad(cache.shows);
     populateShowSelector(sortedShows);
 }
 
@@ -45,7 +43,7 @@ function populateShowSelector(shows) {
 async function fetchEpisodes(showId) {
     if (cache.episodes[showId] && Array.isArray(cache.episodes[showId])) {
         populateEpisodeSelector(cache.episodes[showId]);
-        displayAllEpisodes(cache.episodes[showId], showId); // Show all episodes when available in cache
+        displayAllEpisodes(cache.episodes[showId]); // Show all episodes when available in cache
         return;
     }
 
@@ -65,6 +63,7 @@ async function fetchEpisodes(showId) {
         }
 
         populateEpisodeSelector(episodes);
+        
         displayAllEpisodes(episodes, showId); // Display all episodes on first fetch
     } catch (error) {
         console.error("Error fetching episodes:", error);
@@ -81,9 +80,46 @@ function populateEpisodeSelector(episodes) {
         episodeSelector.appendChild(option);
     });
 }
+//function for the displayed first data on load
+function displayOnLoad(shows){
+    filmCardContainer.innerHTML = "";
+    counter.textContent = `Results: ${shows.length} Shows found.`;
 
+    shows.forEach((Show) => {
+      const filmCard = document.createElement("div");
+      filmCard.classList.add("film-card");
+      filmCard.dataset.episodeId = Show.id;
+
+      const bannerImg = document.createElement("img");
+      bannerImg.src = Show.image
+        ? Show.image.medium
+        : "default-image.jpg";
+      bannerImg.alt = `Banner image for ${Show.name}`;
+      filmCard.appendChild(bannerImg);
+
+      const titleElement = document.createElement("h3");
+      titleElement.textContent = `${Show.name} (S${Show.season}E${Show.number})`;
+      filmCard.appendChild(titleElement);
+
+      const summaryElement = document.createElement("p");
+      summaryElement.textContent = Show.summary
+        ? Show.summary.replace(/<[^>]*>/g, "")
+        : "No summary available for this episode.";
+      filmCard.appendChild(summaryElement);
+
+      const linkElement = document.createElement("a");
+      linkElement.href = Show.url;
+      linkElement.target = "_blank";
+      linkElement.textContent = "View on TVMaze";
+      linkElement.classList.add("redirect");
+      filmCard.appendChild(linkElement);
+
+      filmCardContainer.appendChild(filmCard);
+    });
+
+}
 // Display all episodes when a show is selected
-function displayAllEpisodes(episodes, showId) {
+function displayAllEpisodes(episodes) {
     filmCardContainer.innerHTML = '';
     counter.textContent = `Results: ${episodes.length} episodes found`;
 
@@ -135,7 +171,7 @@ episodeSelector.addEventListener('change', (event) => {
     } else {
         const selectedShowId = showSelector.value;
         if (selectedShowId) {
-            displayAllEpisodes(cache.episodes[selectedShowId], selectedShowId);
+            displayAllEpisodes(cache.episodes[selectedShowId]);
         }
     }
 });
@@ -181,15 +217,26 @@ function filterEpisodes(episodes, searchTerm) {
 
 // Event listener for search input
 function searchRes(event) {
-    cache.searchTerm = event.target.value;
-    const selectedShowId = showSelector.value;
+    const searchTerm = event.target.value.toLowerCase();
+    cache.searchTerm = searchTerm;
+     if(!showSelector.value){
+        const filteredShows = cache.shows.filter((show) =>
+          show.name.toLowerCase().includes(searchTerm)
+        );
+        counter.textContent = `Results: ${filteredShows.length} Shows found`;
+        displayOnLoad(filteredShows);
+        return;
+     }
+     const theSelectedShow = showSelector.value;
+     const episodes = cache.episodes[theSelectedShow];
+     if(episodes && Array.isArray(episodes)){
+        const filteredEpisodes = filterEpisodes(episodes, searchTerm);
+        counter.textContent=`Result: ${filteredEpisodes.length} episodes found`;
+        displayAllEpisodes(filteredEpisodes);
 
-    if (selectedShowId && cache.episodes[selectedShowId]) {
-        const filteredEpisodes = filterEpisodes(cache.episodes[selectedShowId], cache.searchTerm);
-        counter.textContent = `Results: ${filteredEpisodes.length} episodes found`;
-        displayAllEpisodes(filteredEpisodes, selectedShowId);
+     }
+      
     }
-}
 
 searchBox.addEventListener("input", searchRes);
 
