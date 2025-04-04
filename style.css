@@ -97,4 +97,24 @@ select option {
 
 
 
-/* =================================== */
+/* ============== Summary text ===================== */
+.summary-wrapper {
+  
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-text {
+  margin: 0;
+  flex: 1;
+}
+
+.see-more-btn {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}

@@ -101,11 +101,56 @@ function displayOnLoad(shows){
       titleElement.textContent = `${Show.name} (S${Show.season}E${Show.number})`;
       filmCard.appendChild(titleElement);
 
+
+
+
+      const maxSummaryLength = 150;
       const summaryElement = document.createElement("p");
-      summaryElement.textContent = Show.summary
-        ? Show.summary.replace(/<[^>]*>/g, "")
-        : "No summary available for this episode.";
+      const cleanSummary = (Show.summary || "No summary available.").replace(/<[^>]*>/g,"");
+      const shortSummary = cleanSummary.length > maxSummaryLength  ? cleanSummary.slice(0, maxSummaryLength) + "..."  : cleanSummary;
+      summaryElement.textContent = shortSummary;
       filmCard.appendChild(summaryElement);
+      const summaryWrapper = document.createElement("div");
+      summaryWrapper.classList.add("summary-wrapper");
+      summaryElement.classList.add("summary-text");
+      summaryWrapper.appendChild(summaryElement);
+
+      if (cleanSummary.length > maxSummaryLength) {
+        const seeMoreBtn = document.createElement("button");
+        seeMoreBtn.textContent = "See More";
+        seeMoreBtn.classList.add("see-more-btn");
+
+        seeMoreBtn.addEventListener("click", () => {
+          const isShort = summaryElement.textContent === shortSummary;
+          summaryElement.textContent = isShort ? cleanSummary : shortSummary;
+          seeMoreBtn.textContent = isShort ? "See Less" : "See More";
+        });
+        summaryWrapper.appendChild(seeMoreBtn);
+
+       
+      }
+       filmCard.appendChild(summaryWrapper);
+      
+
+
+      //const summaryElement = document.createElement("p");
+      //summaryElement.textContent = Show.summary
+       // ? Show.summary.replace(/<[^>]*>/g, "")
+       // : "No summary available for this episode.";
+      //filmCard.appendChild(summaryElement);
+      const generesElement = document.createElement("p");
+      generesElement.textContent = `Genre: ${Show.genres}`;
+      filmCard.appendChild(generesElement);
+      const statusElement = document.createElement("p");
+      statusElement.textContent = `Status: ${Show.status}`;
+      filmCard.appendChild(statusElement);
+      const ratingElement = document.createElement("p");
+      ratingElement.textContent = `Rating: ${Show.rating.average}`;
+      filmCard.appendChild(ratingElement);
+      const runtimeElement = document.createElement("p");
+      runtimeElement.textContent = `Run Time: ${Show.runtime}`;
+      filmCard.appendChild(runtimeElement);
+
 
       const linkElement = document.createElement("a");
       linkElement.href = Show.url;
