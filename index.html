@@ -12,7 +12,7 @@
     <div id="search-bar" class="search-bar">
       <label>Search <input type="search" id="search-input" name="search-input" placeholder="Search the Movie" /> 🔍 </label>
       <p id="counter"></p>
-
+      <button id="backToShowsBtn" class="hidden">Back to Shows</button>
       <select id="showSelector">
         <option value="">Select a Show</option>
     </select>
@@ -20,8 +20,11 @@
         <option value="">Select an Episode</option>
     </select>
     </div>
-
-    <div id="filmCard-container" class="filmCard-container">
+    <div id="showsView"> <!--i used this wrap on film card container to enable it to hide when we want to hide it-->
+      <div id="filmCard-container" class="filmCard-container"></div>
+    </div>
+    
+    
         
     </div>
 
